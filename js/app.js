@@ -7,8 +7,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   const config = await DB.getConfig();
   DB.applyAccentColor(config.accentColor);
 
-  // Poblar textos principales
-  document.getElementById('siteLogo').textContent = config.siteName || 'Mi Vlog';
+  // Poblar textos principales y enlaces
+  const siteLogo = document.getElementById('siteLogo');
+  if (siteLogo) {
+    siteLogo.textContent = config.siteName || 'Mi Vlog';
+    siteLogo.href = `/${DB.siteId}`;
+  }
+
+  const floatingAdmin = document.getElementById('floatingAdminBtn');
+  if (floatingAdmin) {
+    floatingAdmin.href = `/${DB.siteId}/admin`;
+  }
+
   document.getElementById('footerSiteName').textContent = config.siteName || 'Mi Vlog';
   document.getElementById('currentYear').textContent = new Date().getFullYear();
   document.getElementById('heroTitle').textContent = config.heroTitle || 'Bienvenido';
@@ -88,13 +98,13 @@ async function renderArticles() {
             ${tagsHtml}
           </div>
           <h3 class="card-title">
-            <a href="article.html?site=${DB.siteId}&id=${article.id}">${article.title}</a>
+            <a href="/${DB.siteId}/article/${article.id}">${article.title}</a>
           </h3>
           <div class="card-excerpt">
             ${DB.getExcerpt(article.content, 120)}
           </div>
           <div class="card-footer">
-            <a href="article.html?site=${DB.siteId}&id=${article.id}" class="read-more">Leer más</a>
+            <a href="/${DB.siteId}/article/${article.id}" class="read-more">Leer más</a>
           </div>
         </div>
       </article>

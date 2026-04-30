@@ -1,0 +1,44 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/superadmin",
+        "destination": "/superadmin.html"
+      },
+      {
+        "source": "/superadmin/",
+        "destination": "/superadmin.html"
+      },
+      {
+        "source": "/",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/*/admin",
+        "destination": "/admin.html"
+      },
+      {
+        "source": "/*/admin/",
+        "destination": "/admin.html"
+      },
+      {
+        "source": "/*/article/*",
+        "destination": "/article.html"
+      },
+      {
+        "source": "/*",
+        "destination": "/vlog.html"
+      },
+      {
+        "source": "/*/",
+        "destination": "/vlog.html"
+      }
+    ]
+  }
+}

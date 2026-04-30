@@ -3,55 +3,107 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mi Vlog</title>
-  <link rel="stylesheet" href="css/style.css">
+  <title>Vlog SaaS - Crea tu espacio en minutos</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .saas-hero {
+      text-align: center;
+      padding: var(--space-3xl) var(--space-lg);
+      background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+      border-bottom: 1px solid var(--bg-tertiary);
+    }
+    .saas-hero h1 {
+      font-size: 3.5rem;
+      margin-bottom: var(--space-md);
+      background: -webkit-linear-gradient(45deg, var(--accent-primary), #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .saas-hero p {
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto var(--space-xl) auto;
+      line-height: 1.6;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--space-xl);
+      padding: var(--space-3xl) 0;
+    }
+    .feature-card {
+      background: var(--bg-secondary);
+      padding: var(--space-2xl);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--bg-tertiary);
+      text-align: center;
+      transition: transform var(--transition-normal);
+    }
+    .feature-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--accent-primary);
+    }
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: var(--space-md);
+    }
+  </style>
 </head>
 <body>
 
   <header class="site-header">
-    <div class="container">
-      <a href="index.html" class="logo" id="siteLogo">Mi Vlog</a>
-      <nav class="nav-links" id="socialNavTop">
-        <!-- Links se llenan dinámicamente -->
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+      <a href="/" class="logo">Vlog SaaS</a>
+      <nav class="nav-links">
+        <a href="#caracteristicas">Características</a>
+        <a href="/superadmin" class="btn btn-outline btn-small" style="margin-left: 1rem;">Acceso Admin</a>
       </nav>
     </div>
   </header>
 
   <main>
-    <section class="hero">
+    <section class="saas-hero">
       <div class="container">
-        <h1 class="hero-title" id="heroTitle">Bienvenido</h1>
-        <p class="hero-description" id="heroDesc">Cargando...</p>
+        <h1>Tu Vlog Profesional en Segundos</h1>
+        <p>Una plataforma diseñada para creadores de contenido. Aloja tu vlog, gestiona tus artículos y conecta con tu audiencia sin preocuparte por el código o servidores.</p>
+        <div style="display: flex; gap: var(--space-md); justify-content: center;">
+          <a href="#contacto" class="btn btn-primary">Empieza Hoy Mismo</a>
+          <a href="#demo" class="btn btn-outline">Ver Demo</a>
+        </div>
       </div>
     </section>
 
-    <section class="articles-section">
-      <div class="container">
-        <h2 class="section-title">Últimas Publicaciones</h2>
-        <div class="grid" id="articlesGrid">
-          <!-- Artículos se cargan aquí -->
-          <p>Cargando artículos...</p>
+    <section id="caracteristicas" class="container">
+      <div class="features-grid">
+        
+        <div class="feature-card">
+          <div class="feature-icon">🚀</div>
+          <h3>Carga Ultrarrápida</h3>
+          <p style="color: var(--text-secondary); margin-top: 0.5rem;">Infraestructura impulsada por Firebase y Google Cloud para que tu contenido vuele.</p>
         </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🛠️</div>
+          <h3>Panel Intuitivo</h3>
+          <p style="color: var(--text-secondary); margin-top: 0.5rem;">Crea artículos, sube imágenes o inserta videos de YouTube desde tu propio panel privado.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🌐</div>
+          <h3>Dominio Propio</h3>
+          <p style="color: var(--text-secondary); margin-top: 0.5rem;">Usa nuestros subdominios gratuitos (ej. multisitios.cl/tu-nombre) o conecta tu propio dominio .com.</p>
+        </div>
+
       </div>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="container">
-      <div class="social-links" id="socialNavBottom">
-        <!-- Links se llenan dinámicamente -->
-      </div>
-      <p>&copy; <span id="currentYear"></span> <span id="footerSiteName">Mi Vlog</span>. Todos los derechos reservados.</p>
+  <footer class="site-footer" style="margin-top: var(--space-3xl);">
+    <div class="container" style="text-align: center;">
+      <p>&copy; 2026 Vlog SaaS Multi-Sitio. Todos los derechos reservados.</p>
     </div>
   </footer>
 
-  <a href="admin.html" class="floating-admin-btn" title="Ir al panel de administración">⚙️</a>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
-  
-  <script src="js/data.js"></script>
-  <script src="js/app.js"></script>
 </body>
 </html>

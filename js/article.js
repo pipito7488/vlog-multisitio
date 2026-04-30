@@ -21,9 +21,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   document.getElementById('socialNavTop').innerHTML = socialHtml;
 
-  // Cargar artículo
-  const urlParams = new URLSearchParams(window.location.search);
-  const articleId = urlParams.get('id');
+  // Obtener ID de artículo
+  function getArticleIdFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const idFromParam = urlParams.get('id');
+    if (idFromParam) return idFromParam;
+
+    const pathParts = window.location.pathname.split('/').filter(p => p.length > 0);
+    if (pathParts.length >= 3 && pathParts[1] === 'article') {
+      return pathParts[2];
+    }
+    return null;
+  }
+  const articleId = getArticleIdFromUrl();
 
   if (!articleId) {
     showError();

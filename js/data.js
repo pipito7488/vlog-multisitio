@@ -16,9 +16,22 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const firestore = firebase.firestore();
 
-// Obtener siteId de la URL (ej. ?site=vlog-juan), o usar 'default'
-const urlParams = new URLSearchParams(window.location.search);
-let currentSiteId = urlParams.get('site') || localStorage.getItem('last_site_id') || 'default-site';
+// Obtener siteId de la URL (Clean URLs o Query Params)
+function getSiteIdFromUrl() {
+  const urlParams = new URLSearchParams(window.location.search);
+  let siteFromParam = urlParams.get('site');
+  if (siteFromParam) return siteFromParam;
+
+  // Para Clean URLs (ej: /vlog-juan o /vlog-juan/admin)
+  const pathParts = window.location.pathname.split('/').filter(p => p.length > 0);
+  if (pathParts.length > 0 && pathParts[0] !== 'superadmin' && !pathParts[0].endsWith('.html')) {
+    return pathParts[0];
+  }
+  
+  return localStorage.getItem('last_site_id') || 'default-site';
+}
+
+let currentSiteId = getSiteIdFromUrl();
 localStorage.setItem('last_site_id', currentSiteId);
 
 const DB = {

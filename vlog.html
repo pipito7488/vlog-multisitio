@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Vlog</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo" id="siteLogo">Mi Vlog</a>
+      <nav class="nav-links" id="socialNavTop">
+        <!-- Links se llenan dinámicamente -->
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <h1 class="hero-title" id="heroTitle">Bienvenido</h1>
+        <p class="hero-description" id="heroDesc">Cargando...</p>
+      </div>
+    </section>
+
+    <section class="articles-section">
+      <div class="container">
+        <h2 class="section-title">Últimas Publicaciones</h2>
+        <div class="grid" id="articlesGrid">
+          <!-- Artículos se cargan aquí -->
+          <p>Cargando artículos...</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="social-links" id="socialNavBottom">
+        <!-- Links se llenan dinámicamente -->
+      </div>
+      <p>&copy; <span id="currentYear"></span> <span id="footerSiteName">Mi Vlog</span>. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <a href="#" id="floatingAdminBtn" class="floating-admin-btn" title="Ir al panel de administración">⚙️</a>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+  
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
