@@ -5,7 +5,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
   // Cargar configuración y aplicar colores
   const config = await DB.getConfig();
-  DB.applyAccentColor(config.accentColor);
+  DB.applyDesign(config);
 
   // Poblar textos principales y enlaces
   const siteLogo = document.getElementById('siteLogo');
@@ -29,6 +29,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Renderizar artículos
   await renderArticles();
+
+  // Escuchar cambios en vivo desde el editor visual
+  window.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'LIVE_PREVIEW_UPDATE') {
+      const liveConfig = event.data.config;
+      DB.applyDesign(liveConfig);
+      
+      if (document.getElementById('siteLogo')) {
+        document.getElementById('siteLogo').textContent = liveConfig.siteName || 'Mi Vlog';
+        document.getElementById('footerSiteName').textContent = liveConfig.siteName || 'Mi Vlog';
+      }
+      if (document.getElementById('heroTitle')) {
+        document.getElementById('heroTitle').textContent = liveConfig.heroTitle || 'Bienvenido';
+        document.getElementById('heroDesc').textContent = liveConfig.heroDescription || '';
+      }
+    }
+  });
 });
 
 function renderSocialLinks(socials) {

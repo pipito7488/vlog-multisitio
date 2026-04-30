@@ -321,11 +321,73 @@ async function initSettingsPanel() {
   document.getElementById('cfgHeroTitle').value = config.heroTitle || '';
   document.getElementById('cfgHeroDesc').value = config.heroDescription || '';
   
+  document.getElementById('cfgTheme').value = config.theme || 'dark';
+  document.getElementById('cfgFontFamily').value = config.fontFamily || 'Inter';
+  document.getElementById('cfgBorderRadius').value = config.borderRadius || '12px';
+
+  if (config.heroImage) {
+    document.getElementById('cfgHeroImageBase64').value = config.heroImage;
+    document.getElementById('cfgHeroImagePreview').style.backgroundImage = `url(${config.heroImage})`;
+    const textEl = document.querySelector('#cfgHeroImagePreview .image-upload-text');
+    if (textEl) textEl.style.display = 'none';
+  }
+  
   const socials = config.socials || {};
   document.getElementById('cfgSocYoutube').value = socials.youtube || '';
   document.getElementById('cfgSocInsta').value = socials.instagram || '';
   document.getElementById('cfgSocTwitter').value = socials.twitter || '';
   document.getElementById('cfgSocTiktok').value = socials.tiktok || '';
+
+  // Setup Iframe Live Preview
+  const iframe = document.getElementById('livePreviewFrame');
+  if (iframe) iframe.src = `/${DB.siteId}`;
+
+  // Image Upload para Hero
+  document.getElementById('cfgHeroImageUpload').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const base64 = await DB.resizeImage(file);
+      document.getElementById('cfgHeroImageBase64').value = base64;
+      document.getElementById('cfgHeroImagePreview').style.backgroundImage = `url(${base64})`;
+      document.querySelector('#cfgHeroImagePreview .image-upload-text').style.display = 'none';
+      sendLiveUpdate();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  });
+
+  document.getElementById('btnRemoveHeroImage').addEventListener('click', () => {
+    document.getElementById('cfgHeroImageBase64').value = '';
+    document.getElementById('cfgHeroImagePreview').style.backgroundImage = 'none';
+    document.querySelector('#cfgHeroImagePreview .image-upload-text').style.display = 'block';
+    sendLiveUpdate();
+  });
+
+  function sendLiveUpdate() {
+    const liveConfig = {
+      ...config,
+      siteName: document.getElementById('cfgSiteName').value,
+      accentColor: document.getElementById('cfgAccentColor').value,
+      heroTitle: document.getElementById('cfgHeroTitle').value,
+      heroDescription: document.getElementById('cfgHeroDesc').value,
+      theme: document.getElementById('cfgTheme').value,
+      fontFamily: document.getElementById('cfgFontFamily').value,
+      borderRadius: document.getElementById('cfgBorderRadius').value,
+      heroImage: document.getElementById('cfgHeroImageBase64').value
+    };
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage({ type: 'LIVE_PREVIEW_UPDATE', config: liveConfig }, '*');
+    }
+  }
+
+  const inputs = document.querySelectorAll('#configForm input, #configForm select, #configForm textarea');
+  inputs.forEach(input => {
+    if (input.id !== 'cfgPassword' && input.type !== 'file') {
+      input.addEventListener('input', sendLiveUpdate);
+      input.addEventListener('change', sendLiveUpdate);
+    }
+  });
 
   // Guardar configuración
   document.getElementById('btnSaveConfig').addEventListener('click', async (e) => {
@@ -341,6 +403,10 @@ async function initSettingsPanel() {
       accentColor: document.getElementById('cfgAccentColor').value,
       heroTitle: document.getElementById('cfgHeroTitle').value,
       heroDescription: document.getElementById('cfgHeroDesc').value,
+      theme: document.getElementById('cfgTheme').value,
+      fontFamily: document.getElementById('cfgFontFamily').value,
+      borderRadius: document.getElementById('cfgBorderRadius').value,
+      heroImage: document.getElementById('cfgHeroImageBase64').value,
       socials: {
         youtube: document.getElementById('cfgSocYoutube').value,
         instagram: document.getElementById('cfgSocInsta').value,
@@ -358,19 +424,13 @@ async function initSettingsPanel() {
     if (success) {
       document.getElementById('cfgPassword').value = '';
       showToast('Configuración guardada.', 'success');
-      // Actualizar variables de la UI actual si es necesario
-      const logoEl = document.querySelector('.admin-sidebar .logo');
-      if (logoEl) logoEl.textContent = newConfig.siteName;
     } else {
       showToast('Error guardando configuración', 'error');
     }
 
-    btnSave.textContent = 'Guardar Cambios';
+    btnSave.textContent = 'Guardar';
     btnSave.disabled = false;
   });
-
-  // Ocultar export/import ya que ahora usamos base de datos real
-  document.getElementById('btnExportData').parentElement.classList.add('hidden');
 }
 
 function switchToPanel(panelId) {

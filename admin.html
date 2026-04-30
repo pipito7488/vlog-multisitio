@@ -144,76 +144,115 @@
         </form>
       </div>
 
-      <!-- Panel de Configuración -->
-      <div id="settingsPanel" class="admin-panel">
-        <div class="admin-header">
-          <h2>Configuración del Sitio</h2>
-          <button class="btn btn-primary" id="btnSaveConfig">Guardar Cambios</button>
+      <!-- Panel de Configuración (Constructor Visual) -->
+      <div id="settingsPanel" class="admin-panel" style="padding: 0; overflow: hidden;">
+        <div style="display: flex; height: 85vh;">
+          
+          <!-- Columna Izquierda: Controles -->
+          <div style="width: 380px; min-width: 380px; padding: var(--space-xl); border-right: 1px solid var(--bg-tertiary); overflow-y: auto; background: var(--bg-secondary);">
+            <div class="admin-header" style="margin-bottom: var(--space-lg);">
+              <h2 style="font-size: 1.5rem;">Constructor Visual</h2>
+              <button class="btn btn-primary btn-small" id="btnSaveConfig">Guardar</button>
+            </div>
+
+            <form id="configForm">
+              <h3 style="margin-top: var(--space-sm); margin-bottom: var(--space-md); border-bottom: 1px solid var(--bg-tertiary); padding-bottom: 8px;">Apariencia</h3>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm);">
+                <div class="input-group">
+                  <label for="cfgTheme">Tema</label>
+                  <select id="cfgTheme">
+                    <option value="dark">Oscuro</option>
+                    <option value="light">Claro</option>
+                  </select>
+                </div>
+                <div class="input-group">
+                  <label for="cfgAccentColor">Acento</label>
+                  <input type="color" id="cfgAccentColor" style="height: 48px; padding: 0.25rem;">
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label for="cfgFontFamily">Tipografía</label>
+                <select id="cfgFontFamily">
+                  <option value="Inter">Inter (Moderna)</option>
+                  <option value="Roboto">Roboto (Clásica)</option>
+                  <option value="Poppins">Poppins (Redondeada)</option>
+                  <option value="Playfair Display">Playfair (Elegante)</option>
+                  <option value="Merriweather">Merriweather (Lectura)</option>
+                </select>
+              </div>
+              
+              <div class="input-group">
+                <label for="cfgBorderRadius">Redondeo de Tarjetas</label>
+                <select id="cfgBorderRadius">
+                  <option value="4px">Cuadrado (4px)</option>
+                  <option value="12px">Normal (12px)</option>
+                  <option value="24px">Redondeado (24px)</option>
+                </select>
+              </div>
+
+              <h3 style="margin-top: var(--space-xl); margin-bottom: var(--space-md); border-bottom: 1px solid var(--bg-tertiary); padding-bottom: 8px;">Textos Principales</h3>
+              
+              <div class="input-group">
+                <label for="cfgSiteName">Nombre del Vlog</label>
+                <input type="text" id="cfgSiteName" required>
+              </div>
+              <div class="input-group">
+                <label for="cfgHeroTitle">Título de Bienvenida</label>
+                <input type="text" id="cfgHeroTitle">
+              </div>
+              <div class="input-group">
+                <label for="cfgHeroDesc">Descripción Corta</label>
+                <textarea id="cfgHeroDesc" rows="2"></textarea>
+              </div>
+
+              <div class="input-group">
+                <label>Imagen de Fondo (Cabecera)</label>
+                <label for="cfgHeroImageUpload" class="image-upload-preview" id="cfgHeroImagePreview" style="height: 100px; font-size: 0.9rem; margin-bottom: var(--space-xs);">
+                  <span class="image-upload-text">Subir fondo</span>
+                  <input type="file" id="cfgHeroImageUpload" class="image-upload-input" accept="image/*" style="display: none;">
+                </label>
+                <input type="hidden" id="cfgHeroImageBase64">
+                <button type="button" class="btn btn-outline btn-small" id="btnRemoveHeroImage" style="width: 100%;">Quitar Imagen</button>
+              </div>
+
+              <h3 style="margin-top: var(--space-xl); margin-bottom: var(--space-md); border-bottom: 1px solid var(--bg-tertiary); padding-bottom: 8px;">Redes Sociales</h3>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm);">
+                <div class="input-group">
+                  <label for="cfgSocYoutube">YouTube</label>
+                  <input type="url" id="cfgSocYoutube" placeholder="https://...">
+                </div>
+                <div class="input-group">
+                  <label for="cfgSocInsta">Instagram</label>
+                  <input type="url" id="cfgSocInsta" placeholder="https://...">
+                </div>
+                <div class="input-group">
+                  <label for="cfgSocTwitter">Twitter / X</label>
+                  <input type="url" id="cfgSocTwitter" placeholder="https://...">
+                </div>
+                <div class="input-group">
+                  <label for="cfgSocTiktok">TikTok</label>
+                  <input type="url" id="cfgSocTiktok" placeholder="https://...">
+                </div>
+              </div>
+
+              <h3 style="margin-top: var(--space-xl); margin-bottom: var(--space-md); border-bottom: 1px solid var(--bg-tertiary); padding-bottom: 8px;">Seguridad</h3>
+              <div class="input-group">
+                <label for="cfgPassword">Nueva Contraseña de Admin</label>
+                <input type="password" id="cfgPassword" placeholder="Dejar blanco para no cambiar">
+              </div>
+            </form>
+          </div>
+          
+          <!-- Columna Derecha: Vista Previa en Vivo -->
+          <div style="flex: 1; background: #000; padding: var(--space-xl); display: flex; align-items: center; justify-content: center;">
+             <div style="width: 100%; height: 100%; border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 0 20px rgba(124, 58, 237, 0.2); border: 1px solid var(--bg-tertiary);">
+               <iframe id="livePreviewFrame" src="" style="width: 100%; height: 100%; border: none; background: #fff;"></iframe>
+             </div>
+          </div>
+          
         </div>
-
-        <form id="configForm">
-          <h3 style="margin-top: var(--space-lg); margin-bottom: var(--space-md); border-bottom: 1px solid var(--bg-tertiary); padding-bottom: 8px;">Diseño General</h3>
-          
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
-            <div class="input-group">
-              <label for="cfgSiteName">Nombre del Vlog</label>
-              <input type="text" id="cfgSiteName" required>
-            </div>
-            <div class="input-group">
-              <label for="cfgAccentColor">Color de Acento</label>
-              <input type="color" id="cfgAccentColor" style="height: 50px; padding: 0.25rem;">
-            </div>
-          </div>
-
-          <h3 style="margin-top: var(--space-lg); margin-bottom: var(--space-md); border-bottom: 1px solid var(--bg-tertiary); padding-bottom: 8px;">Sección Principal (Hero)</h3>
-          
-          <div class="input-group">
-            <label for="cfgHeroTitle">Título Principal</label>
-            <input type="text" id="cfgHeroTitle">
-          </div>
-          <div class="input-group">
-            <label for="cfgHeroDesc">Descripción</label>
-            <textarea id="cfgHeroDesc" rows="3"></textarea>
-          </div>
-
-          <h3 style="margin-top: var(--space-lg); margin-bottom: var(--space-md); border-bottom: 1px solid var(--bg-tertiary); padding-bottom: 8px;">Redes Sociales (URLs)</h3>
-          
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
-            <div class="input-group">
-              <label for="cfgSocYoutube">YouTube</label>
-              <input type="url" id="cfgSocYoutube" placeholder="https://youtube.com/...">
-            </div>
-            <div class="input-group">
-              <label for="cfgSocInsta">Instagram</label>
-              <input type="url" id="cfgSocInsta" placeholder="https://instagram.com/...">
-            </div>
-            <div class="input-group">
-              <label for="cfgSocTwitter">Twitter / X</label>
-              <input type="url" id="cfgSocTwitter" placeholder="https://twitter.com/...">
-            </div>
-            <div class="input-group">
-              <label for="cfgSocTiktok">TikTok</label>
-              <input type="url" id="cfgSocTiktok" placeholder="https://tiktok.com/...">
-            </div>
-          </div>
-
-          <h3 style="margin-top: var(--space-lg); margin-bottom: var(--space-md); border-bottom: 1px solid var(--bg-tertiary); padding-bottom: 8px;">Seguridad</h3>
-          
-          <div class="input-group">
-            <label for="cfgPassword">Nueva Contraseña de Admin (deja en blanco para no cambiar)</label>
-            <input type="password" id="cfgPassword" placeholder="Nueva contraseña">
-          </div>
-
-          <h3 style="margin-top: var(--space-lg); margin-bottom: var(--space-md); border-bottom: 1px solid var(--bg-tertiary); padding-bottom: 8px;">Respaldo de Datos</h3>
-          
-          <div style="display: flex; gap: var(--space-md); margin-bottom: var(--space-xl);">
-            <button type="button" class="btn btn-outline" id="btnExportData">Exportar Datos (Backup)</button>
-            <label class="btn btn-outline" style="cursor: pointer;">
-              Importar Datos
-              <input type="file" id="btnImportData" accept=".json" class="hidden">
-            </label>
-          </div>
-        </form>
       </div>
 
     </main>

@@ -5,7 +5,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
   // Cargar configuración global
   const config = await DB.getConfig();
-  DB.applyAccentColor(config.accentColor);
+  DB.applyDesign(config);
 
   document.getElementById('siteLogo').textContent = config.siteName || 'Mi Vlog';
   document.getElementById('footerSiteName').textContent = config.siteName || 'Mi Vlog';
@@ -49,6 +49,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   renderArticle(article, config.siteName);
+
+  // Escuchar cambios en vivo desde el editor visual
+  window.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'LIVE_PREVIEW_UPDATE') {
+      const liveConfig = event.data.config;
+      DB.applyDesign(liveConfig);
+      
+      if (document.getElementById('siteLogo') && liveConfig.siteName !== undefined) {
+        document.getElementById('siteLogo').textContent = liveConfig.siteName || 'Mi Vlog';
+        document.getElementById('footerSiteName').textContent = liveConfig.siteName || 'Mi Vlog';
+      }
+    }
+  });
 });
 
 function showError() {

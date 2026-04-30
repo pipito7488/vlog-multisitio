@@ -44,6 +44,10 @@ const DB = {
     heroDescription: 'Un espacio para compartir historias, videos y todo lo que me apasiona.',
     accentColor: '#7C3AED',
     password: 'admin123',
+    theme: 'dark', // 'dark' o 'light'
+    fontFamily: 'Inter',
+    borderRadius: '12px',
+    heroImage: '', // URL base64 de la imagen de fondo
     socials: {
       youtube: '',
       instagram: '',
@@ -84,6 +88,38 @@ const DB = {
     if (!color) return;
     document.documentElement.style.setProperty('--accent-primary', color);
     document.documentElement.style.setProperty('--accent-secondary', color + 'BB');
+  },
+
+  applyDesign(config) {
+    this.applyAccentColor(config.accentColor);
+    
+    if (config.theme === 'light') {
+      document.body.classList.add('theme-light');
+    } else {
+      document.body.classList.remove('theme-light');
+    }
+    
+    if (config.fontFamily) {
+      const isSerif = config.fontFamily === 'Merriweather' || config.fontFamily === 'Playfair Display';
+      const fallback = isSerif ? 'serif' : 'sans-serif';
+      document.documentElement.style.setProperty('--font-sans', `"${config.fontFamily}", ${fallback}`);
+      document.documentElement.style.setProperty('--font-serif', `"${config.fontFamily}", ${fallback}`);
+    }
+
+    if (config.borderRadius) {
+      document.documentElement.style.setProperty('--radius-sm', `calc(${config.borderRadius} / 2)`);
+      document.documentElement.style.setProperty('--radius-md', config.borderRadius);
+      document.documentElement.style.setProperty('--radius-lg', `calc(${config.borderRadius} * 1.5)`);
+    }
+    
+    const heroEl = document.querySelector('.hero');
+    if (heroEl && config.heroImage) {
+      heroEl.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${config.heroImage})`;
+      heroEl.style.backgroundSize = 'cover';
+      heroEl.style.backgroundPosition = 'center';
+    } else if (heroEl) {
+      heroEl.style.backgroundImage = 'none';
+    }
   },
 
   // ── Artículos ─────────────────────────────────────────────────────────────
