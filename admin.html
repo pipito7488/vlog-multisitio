@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Mi Vlog</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Pantalla de Login -->
+  <div id="loginScreen" class="admin-login-wrapper">
+    <div class="admin-login-card">
+      <h1 style="margin-bottom: var(--space-lg);">Acceso Administrativo</h1>
+      <form id="loginForm">
+        <div class="input-group">
+          <label for="passwordInput">Contraseña</label>
+          <input type="password" id="passwordInput" required placeholder="Ingresa tu contraseña">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Entrar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Panel de Administración (oculto por defecto) -->
+  <div id="adminApp" class="admin-layout hidden">
+    <aside class="admin-sidebar">
+      <div class="logo">Admin Vlog</div>
+      <nav class="admin-nav">
+        <div class="admin-nav-item active" data-target="articlesPanel">📝 Artículos</div>
+        <div class="admin-nav-item" data-target="settingsPanel">⚙️ Configuración</div>
+        <div class="admin-nav-item" style="margin-top: auto;" id="logoutBtn">🚪 Salir</div>
+        <a href="index.html" class="admin-nav-item" target="_blank">🌐 Ver sitio</a>
+      </nav>
+    </aside>
+
+    <main class="admin-content">
+      
+      <!-- Panel de Artículos -->
+      <div id="articlesPanel" class="admin-panel active">
+        <div class="admin-header">
+          <h2>Tus Artículos</h2>
+          <button class="btn btn-primary" id="btnNewArticle">+ Nuevo Artículo</button>
+        </div>
+        
+        <div style="overflow-x: auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="articlesTableBody">
+              <!-- Filas de artículos -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Editor de Artículo -->
+      <div id="editorPanel" class="admin-panel">
+        <div class="admin-header">
+          <h2 id="editorTitle">Crear Artículo</h2>
+          <div class="actions">
+            <button class="btn btn-outline" id="btnCancelEdit">Cancelar</button>
+            <button class="btn btn-primary" id="btnSaveArticle">Guardar</button>
+          </div>
+        </div>
+
+        <form id="articleForm">
+          <input type="hidden" id="articleId">
+          
+          <div class="input-group">
+            <label for="artTitle">Título del Artículo</label>
+            <input type="text" id="artTitle" required placeholder="Escribe un título atractivo...">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+            <div class="input-group">
+              <label for="artDate">Fecha</label>
+              <input type="date" id="artDate" required>
+            </div>
+            <div class="input-group">
+              <label for="artStatus">Estado</label>
+              <select id="artStatus">
+                <option value="draft">Borrador</option>
+                <option value="published">Publicado</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Contenido Multimedia (Elige uno)</label>
+            <select id="mediaType" style="margin-bottom: var(--space-sm);">
+              <option value="image">Subir Imagen</option>
+              <option value="youtube">Video de YouTube</option>
+            </select>
+            
+            <div id="mediaImageConfig">
+              <label for="artImageUpload" class="image-upload-preview" id="imagePreview">
+                <span class="image-upload-text">Haz clic para subir una imagen</span>
+                <input type="file" id="artImageUpload" class="image-upload-input" accept="image/*">
+              </label>
+              <input type="hidden" id="artImageBase64">
+            </div>
+            
+            <div id="mediaYoutubeConfig" class="hidden">
+              <input type="url" id="artYoutube" placeholder="Pega el enlace de YouTube aquí...">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Contenido (Texto)</label>
+            <div class="editor-toolbar">
+              <button type="button" class="editor-btn" data-command="bold" title="Negrita"><b>B</b></button>
+              <button type="button" class="editor-btn" data-command="italic" title="Cursiva"><i>I</i></button>
+              <button type="button" class="editor-btn" data-command="underline" title="Subrayado"><u>U</u></button>
+              <div style="width: 1px; background: var(--bg-primary); margin: 0 4px;"></div>
+              <button type="button" class="editor-btn" data-command="insertUnorderedList" title="Lista">ul</button>
+              <button type="button" class="editor-btn" data-command="insertOrderedList" title="Lista numerada">ol</button>
+              <div style="width: 1px; background: var(--bg-primary); margin: 0 4px;"></div>
+              <button type="button" class="editor-btn" data-command="createLink" title="Enlace">🔗</button>
+            </div>
+            <div class="editor-content" id="artContent" contenteditable="true" placeholder="Escribe el contenido aquí..."></div>
+          </div>
+
+          <div class="input-group">
+            <label>Etiquetas (separadas por coma)</label>
+            <input type="text" id="artTags" placeholder="viajes, tecnología, opinion...">
+          </div>
+
+          <div class="input-group">
+            <label style="display: flex; justify-content: space-between;">
+              <span>Botones de Redirección (Links externos)</span>
+              <button type="button" class="btn btn-small btn-outline" id="btnAddLink">+ Agregar Link</button>
+            </label>
+            <div id="linksEditorList" class="links-editor-list">
+              <!-- Campos de links -->
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Panel de Configuración -->
+      <div id="settingsPanel" class="admin-panel">
+        <div class="admin-header">
+          <h2>Configuración del Sitio</h2>
+          <button class="btn btn-primary" id="btnSaveConfig">Guardar Cambios</button>
+        </div>
+
+        <form id="configForm">
+          <h3 style="margin-top: var(--space-lg); margin-bottom: var(--space-md); border-bottom: 1px solid var(--bg-tertiary); padding-bottom: 8px;">Diseño General</h3>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+            <div class="input-group">
+              <label for="cfgSiteName">Nombre del Vlog</label>
+              <input type="text" id="cfgSiteName" required>
+            </div>
+            <div class="input-group">
+              <label for="cfgAccentColor">Color de Acento</label>
+              <input type="color" id="cfgAccentColor" style="height: 50px; padding: 0.25rem;">
+            </div>
+          </div>
+
+          <h3 style="margin-top: var(--space-lg); margin-bottom: var(--space-md); border-bottom: 1px solid var(--bg-tertiary); padding-bottom: 8px;">Sección Principal (Hero)</h3>
+          
+          <div class="input-group">
+            <label for="cfgHeroTitle">Título Principal</label>
+            <input type="text" id="cfgHeroTitle">
+          </div>
+          <div class="input-group">
+            <label for="cfgHeroDesc">Descripción</label>
+            <textarea id="cfgHeroDesc" rows="3"></textarea>
+          </div>
+
+          <h3 style="margin-top: var(--space-lg); margin-bottom: var(--space-md); border-bottom: 1px solid var(--bg-tertiary); padding-bottom: 8px;">Redes Sociales (URLs)</h3>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+            <div class="input-group">
+              <label for="cfgSocYoutube">YouTube</label>
+              <input type="url" id="cfgSocYoutube" placeholder="https://youtube.com/...">
+            </div>
+            <div class="input-group">
+              <label for="cfgSocInsta">Instagram</label>
+              <input type="url" id="cfgSocInsta" placeholder="https://instagram.com/...">
+            </div>
+            <div class="input-group">
+              <label for="cfgSocTwitter">Twitter / X</label>
+              <input type="url" id="cfgSocTwitter" placeholder="https://twitter.com/...">
+            </div>
+            <div class="input-group">
+              <label for="cfgSocTiktok">TikTok</label>
+              <input type="url" id="cfgSocTiktok" placeholder="https://tiktok.com/...">
+            </div>
+          </div>
+
+          <h3 style="margin-top: var(--space-lg); margin-bottom: var(--space-md); border-bottom: 1px solid var(--bg-tertiary); padding-bottom: 8px;">Seguridad</h3>
+          
+          <div class="input-group">
+            <label for="cfgPassword">Nueva Contraseña de Admin (deja en blanco para no cambiar)</label>
+            <input type="password" id="cfgPassword" placeholder="Nueva contraseña">
+          </div>
+
+          <h3 style="margin-top: var(--space-lg); margin-bottom: var(--space-md); border-bottom: 1px solid var(--bg-tertiary); padding-bottom: 8px;">Respaldo de Datos</h3>
+          
+          <div style="display: flex; gap: var(--space-md); margin-bottom: var(--space-xl);">
+            <button type="button" class="btn btn-outline" id="btnExportData">Exportar Datos (Backup)</button>
+            <label class="btn btn-outline" style="cursor: pointer;">
+              Importar Datos
+              <input type="file" id="btnImportData" accept=".json" class="hidden">
+            </label>
+          </div>
+        </form>
+      </div>
+
+    </main>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+  
+  <script src="js/data.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Admin - Vlog Multi-Sitio</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .manager-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: var(--space-3xl) var(--space-lg);
+    }
+    .site-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--bg-tertiary);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+      margin-bottom: var(--space-lg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: border-color var(--transition-fast);
+    }
+    .site-card:hover {
+      border-color: var(--accent-primary);
+    }
+    .site-info h3 { margin-bottom: 0.25rem; }
+    .site-info p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem; }
+    .site-slug {
+      display: inline-block;
+      background: var(--bg-tertiary);
+      padding: 0.2rem 0.5rem;
+      border-radius: var(--radius-sm);
+      font-family: monospace;
+      font-size: 0.8rem;
+    }
+    .site-actions {
+      display: flex;
+      gap: var(--space-sm);
+    }
+    .create-site-box {
+      background: var(--bg-tertiary);
+      padding: var(--space-xl);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-2xl);
+    }
+    .qr-container {
+      background: white;
+      padding: 1rem;
+      border-radius: var(--radius-md);
+      display: inline-block;
+      margin: var(--space-md) 0;
+    }
+    .step-box {
+      background: var(--bg-secondary);
+      padding: var(--space-xl);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--bg-tertiary);
+      margin-bottom: var(--space-lg);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Pantalla de Login Super Admin -->
+  <div id="loginScreen" class="admin-login-wrapper">
+    <div class="admin-login-card" id="step1-password">
+      <h1 style="margin-bottom: var(--space-lg); font-size: 2rem;">Acceso Super Admin</h1>
+      <p style="color: var(--text-secondary); margin-bottom: var(--space-xl);">Control maestro para crear y gestionar todos los sitios web.</p>
+      <form id="loginForm">
+        <div class="input-group">
+          <input type="password" id="passwordInput" required placeholder="Contraseña maestra">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Siguiente</button>
+      </form>
+    </div>
+
+    <!-- Verificación 2FA -->
+    <div class="admin-login-card hidden" id="step2-2fa">
+      <h1 style="margin-bottom: var(--space-lg); font-size: 1.5rem;">Verificación en 2 Pasos</h1>
+      <p style="color: var(--text-secondary); margin-bottom: var(--space-lg);">Abre tu app Google Authenticator e ingresa el código de 6 dígitos.</p>
+      <form id="verify2faForm">
+        <div class="input-group">
+          <input type="text" id="tokenInput" required placeholder="Ej. 123456" maxlength="6" autocomplete="off" style="text-align: center; font-size: 1.5rem; letter-spacing: 5px;">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Verificar</button>
+      </form>
+    </div>
+
+    <!-- Configuración inicial de 2FA -->
+    <div class="admin-login-card hidden" id="step2-setup">
+      <h1 style="margin-bottom: var(--space-md); font-size: 1.5rem;">Configurar 2FA</h1>
+      <p style="color: var(--text-secondary); margin-bottom: var(--space-sm); font-size: 0.9rem;">Escanea este código QR con Google Authenticator o Authy.</p>
+      
+      <div class="qr-container">
+        <canvas id="qrcodeCanvas"></canvas>
+      </div>
+
+      <p style="color: var(--text-secondary); margin-bottom: var(--space-md); font-size: 0.85rem;">Una vez escaneado, ingresa el código generado para confirmar la configuración.</p>
+
+      <form id="setup2faForm">
+        <div class="input-group">
+          <input type="text" id="setupTokenInput" required placeholder="Código de 6 dígitos" maxlength="6" autocomplete="off" style="text-align: center; letter-spacing: 2px;">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Confirmar y Guardar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Panel Principal Super Admin -->
+  <div id="appContainer" class="manager-container hidden">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2xl);">
+      <h1 style="margin: 0;">Super Admin</h1>
+      <button class="btn btn-outline" id="btnLogout">Cerrar Sesión</button>
+    </div>
+
+    <div class="create-site-box">
+      <h2>Crear Nuevo Vlog</h2>
+      <p style="color: var(--text-secondary); margin-bottom: var(--space-md);">Ingresa un identificador único (slug) para el nuevo sitio. Por ejemplo: <code>vlog-viajes</code>.</p>
+      
+      <div style="display: flex; gap: var(--space-md);">
+        <input type="text" id="newSiteSlug" placeholder="ej. mi-nuevo-sitio" style="flex: 1;">
+        <button class="btn btn-primary" id="btnCreateSite">Crear Sitio</button>
+      </div>
+    </div>
+
+    <h2>Todos los Sitios Existentes</h2>
+    <div id="sitesList">
+      <p style="text-align: center; color: var(--text-muted); padding: var(--space-xl);">Cargando sitios...</p>
+    </div>
+
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+  
+  <!-- OTPLIB para 2FA y QRCode -->
+  <script src="https://unpkg.com/@otplib/preset-browser@^12.0.0/buffer.js"></script>
+  <script src="https://unpkg.com/@otplib/preset-browser@^12.0.0/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+
+  <script>
+    // Inicializar Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyBmUIpoLKfVPNwFmVv4ObkQ4V5AjbAnuCw",
+      authDomain: "plantilla-b102b.firebaseapp.com",
+      projectId: "plantilla-b102b",
+      storageBucket: "plantilla-b102b.firebasestorage.app",
+      messagingSenderId: "187235050480",
+      appId: "1:187235050480:web:4dc89b91eb39687a74b335",
+      measurementId: "G-YF758C6ELB"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Contraseña maestra (Puedes cambiarla aquí)
+    const MASTER_PASSWORD = "masterpassword2026";
+    
+    // Variables temporales para 2FA
+    let tempSecret = null;
+    let savedSecret = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (sessionStorage.getItem('superadmin_auth') === 'true') {
+        showApp();
+      }
+    });
+
+    // PASO 1: Contraseña Maestra
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pass = document.getElementById('passwordInput').value;
+      if (pass !== MASTER_PASSWORD) {
+        alert("Contraseña maestra incorrecta.");
+        return;
+      }
+
+      const btn = e.target.querySelector('button');
+      btn.textContent = 'Verificando...';
+      btn.disabled = true;
+
+      try {
+        // Verificar si ya hay un secreto 2FA guardado
+        const doc = await db.collection('system').doc('superadmin').get();
+        
+        document.getElementById('step1-password').classList.add('hidden');
+
+        if (doc.exists && doc.data().totpSecret) {
+          savedSecret = doc.data().totpSecret;
+          document.getElementById('step2-2fa').classList.remove('hidden');
+          document.getElementById('tokenInput').focus();
+        } else {
+          // Si no existe, mostrar configuración inicial
+          setupNew2FA();
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error de conexión a la base de datos.");
+      } finally {
+        btn.textContent = 'Siguiente';
+        btn.disabled = false;
+      }
+    });
+
+    // PASO 2 (Si existe): Verificar Token
+    document.getElementById('verify2faForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const token = document.getElementById('tokenInput').value;
+      
+      const isValid = otplib.authenticator.check(token, savedSecret);
+      
+      if (isValid) {
+        sessionStorage.setItem('superadmin_auth', 'true');
+        showApp();
+      } else {
+        alert("Código incorrecto o expirado.");
+        document.getElementById('tokenInput').value = '';
+      }
+    });
+
+    // PASO 2 (Configuración): Generar QR y Guardar
+    function setupNew2FA() {
+      document.getElementById('step2-setup').classList.remove('hidden');
+      
+      // Generar secreto nuevo
+      tempSecret = otplib.authenticator.generateSecret();
+      const otpauth = otplib.authenticator.keyuri('SuperAdmin', 'Mi Vlog', tempSecret);
+      
+      // Generar QR
+      QRCode.toCanvas(document.getElementById('qrcodeCanvas'), otpauth, function (error) {
+        if (error) console.error(error);
+      });
+    }
+
+    document.getElementById('setup2faForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const token = document.getElementById('setupTokenInput').value;
+      
+      const isValid = otplib.authenticator.check(token, tempSecret);
+      
+      if (isValid) {
+        // Guardar en la base de datos
+        try {
+          await db.collection('system').doc('superadmin').set({ totpSecret: tempSecret });
+          sessionStorage.setItem('superadmin_auth', 'true');
+          showApp();
+        } catch(err) {
+          console.error(err);
+          alert("Error guardando la configuración de seguridad.");
+        }
+      } else {
+        alert("Código incorrecto. Intenta de nuevo.");
+      }
+    });
+
+    document.getElementById('btnLogout').addEventListener('click', () => {
+      sessionStorage.removeItem('superadmin_auth');
+      location.reload();
+    });
+
+    function showApp() {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('appContainer').classList.remove('hidden');
+      loadSites();
+    }
+
+    document.getElementById('btnCreateSite').addEventListener('click', async () => {
+      const slugInput = document.getElementById('newSiteSlug');
+      let slug = slugInput.value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
+      
+      if (!slug) {
+        alert("Por favor, ingresa un identificador válido.");
+        return;
+      }
+
+      const btn = document.getElementById('btnCreateSite');
+      btn.textContent = "Creando...";
+      btn.disabled = true;
+
+      try {
+        const docRef = db.collection('sites').doc(slug);
+        const doc = await docRef.get();
+        if (doc.exists) {
+          alert("Ese identificador ya existe. Elige otro.");
+          return;
+        }
+
+        // Crear sitio
+        await docRef.set({
+          siteName: `Sitio: ${slug}`,
+          tagline: 'Historias, videos y experiencias',
+          heroTitle: '¡Bienvenido!',
+          heroDescription: 'Un nuevo espacio creado.',
+          accentColor: '#7C3AED',
+          password: 'admin123', 
+          socials: { youtube: '', instagram: '', twitter: '', tiktok: '' }
+        });
+
+        slugInput.value = '';
+        await loadSites();
+      } catch (e) {
+        console.error(e);
+        alert("Error creando sitio.");
+      } finally {
+        btn.textContent = "Crear Sitio";
+        btn.disabled = false;
+      }
+    });
+
+    async function loadSites() {
+      const list = document.getElementById('sitesList');
+      try {
+        const snapshot = await db.collection('sites').get();
+        if (snapshot.empty) {
+          list.innerHTML = '<p style="color: var(--text-muted);">No hay sitios creados aún.</p>';
+          return;
+        }
+
+        let html = '';
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          html += `
+            <div class="site-card">
+              <div class="site-info">
+                <h3>${data.siteName || 'Sin Nombre'}</h3>
+                <div class="site-slug">ID: ${doc.id}</div>
+              </div>
+              <div class="site-actions">
+                <a href="index.html?site=${doc.id}" target="_blank" class="btn btn-outline btn-small">🌐 Ver Sitio</a>
+                <a href="admin.html?site=${doc.id}" target="_blank" class="btn btn-primary btn-small">⚙️ Admin</a>
+                <button class="btn btn-danger btn-small" onclick="deleteSite('${doc.id}')">🗑️ Eliminar</button>
+              </div>
+            </div>
+          `;
+        });
+        list.innerHTML = html;
+      } catch (e) {
+        console.error(e);
+        list.innerHTML = '<p style="color: var(--danger);">Error cargando sitios. Revisa los permisos de Firebase.</p>';
+      }
+    }
+
+    window.deleteSite = async function(siteId) {
+      const confirmacion = prompt(`PELIGRO: Vas a eliminar el sitio "${siteId}" y todos sus artículos. Esta acción NO se puede deshacer.\n\nEscribe exactamente "${siteId}" para confirmar:`);
+      
+      if (confirmacion !== siteId) {
+        if (confirmacion !== null) alert("Confirmación incorrecta. Cancelado.");
+        return;
+      }
+
+      try {
+        // 1. Buscar y borrar todos los artículos de este sitio
+        const articlesSnapshot = await db.collection('articles').where('siteId', '==', siteId).get();
+        
+        if (!articlesSnapshot.empty) {
+          // Firebase Batch (hasta 500 operaciones a la vez)
+          const batch = db.batch();
+          articlesSnapshot.forEach(doc => {
+            batch.delete(doc.ref);
+          });
+          await batch.commit();
+          console.log(`Eliminados ${articlesSnapshot.size} artículos.`);
+        }
+
+        // 2. Borrar el documento de configuración del sitio
+        await db.collection('sites').doc(siteId).delete();
+        
+        alert("Sitio y contenido eliminados exitosamente.");
+        await loadSites();
+
+      } catch (error) {
+        console.error(error);
+        alert("Ocurrió un error al intentar eliminar el sitio.");
+      }
+    };
+  </script>
+</body>
+</html>

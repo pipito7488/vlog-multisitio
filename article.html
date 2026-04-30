@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Artículo - Mi Vlog</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo" id="siteLogo">Mi Vlog</a>
+      <nav class="nav-links" id="socialNavTop">
+        <!-- Links se llenan dinámicamente -->
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <article class="container" id="articleContainer">
+      <div class="article-header">
+        <div class="article-meta" id="articleMeta">
+          <!-- Meta (fecha, tags) -->
+        </div>
+        <h1 class="article-title" id="articleTitle">Cargando artículo...</h1>
+      </div>
+      
+      <div id="articleMedia">
+        <!-- Imagen o video -->
+      </div>
+
+      <div class="article-content" id="articleContent">
+        <!-- Contenido HTML -->
+      </div>
+      
+      <div class="redirection-links" id="articleLinks">
+        <!-- Botones de redirección -->
+      </div>
+    </article>
+    
+    <div class="container" id="errorContainer" style="display: none; text-align: center; padding: var(--space-3xl) 0;">
+      <h2>Artículo no encontrado</h2>
+      <p style="margin-top: var(--space-md);"><a href="index.html" class="btn btn-primary">Volver al inicio</a></p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; <span id="currentYear"></span> <span id="footerSiteName">Mi Vlog</span>. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+  
+  <script src="js/data.js"></script>
+  <script src="js/article.js"></script>
+</body>
+</html>
