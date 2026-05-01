@@ -53,6 +53,13 @@ const DB = {
       instagram: '',
       twitter: '',
       tiktok: ''
+    },
+    layout: ['hero', 'articles'],
+    blocks: {
+      hero: { type: 'hero', title: '¡Bienvenido a Mi Vlog!', desc: 'Un espacio para compartir historias y experiencias.', image: '' },
+      about: { type: 'about', title: 'Sobre Mí', desc: 'Hola, soy el creador de este sitio...', image: '' },
+      youtube: { type: 'youtube', url: '' },
+      articles: { type: 'articles', title: 'Últimas Publicaciones' }
     }
   },
 
@@ -61,12 +68,27 @@ const DB = {
   async getConfig() {
     try {
       const doc = await firestore.collection('sites').doc(this.siteId).get();
-      if (!doc.exists) {
-        // Si no existe, lo creamos con config por defecto
+      let data = { ...this.defaultConfig };
+      
+      if (doc.exists) {
+        data = { ...this.defaultConfig, ...doc.data() };
+      } else {
         await this.saveConfig(this.defaultConfig);
-        return { ...this.defaultConfig };
       }
-      return { ...this.defaultConfig, ...doc.data() };
+      
+      // Retro-compatibilidad para sitios antiguos que no tienen layout
+      if (!data.layout || !Array.isArray(data.layout)) {
+        data.layout = ['hero', 'articles'];
+      }
+      if (!data.blocks) {
+        data.blocks = {
+          hero: { type: 'hero', title: data.heroTitle || '¡Bienvenido!', desc: data.heroDescription || '', image: data.heroImage || '' },
+          about: { type: 'about', title: 'Sobre Mí', desc: 'Presentación...', image: '' },
+          youtube: { type: 'youtube', url: '' },
+          articles: { type: 'articles', title: 'Últimas Publicaciones' }
+        };
+      }
+      return data;
     } catch (err) {
       console.error("Error obteniendo config:", err);
       return { ...this.defaultConfig };

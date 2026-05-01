@@ -645,6 +645,20 @@ select:focus {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Modulares / SortableJS */
+.admin-block-item {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.admin-block-item.sortable-ghost {
+  opacity: 0.4;
+  background-color: var(--bg-tertiary);
+}
+.admin-block-item.sortable-drag {
+  opacity: 0.9;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  transform: scale(1.02);
+}
+
 .admin-table {
   width: 100%;
   border-collapse: collapse;

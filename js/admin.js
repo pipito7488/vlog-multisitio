@@ -316,22 +316,18 @@ async function saveArticle() {
 async function initSettingsPanel() {
   const config = await DB.getConfig();
   
+  let currentLayout = config.layout ? [...config.layout] : ['hero', 'articles'];
+  let currentBlocks = config.blocks ? JSON.parse(JSON.stringify(config.blocks)) : {
+    hero: { type: 'hero', title: config.heroTitle || 'Bienvenido', desc: config.heroDescription || '', image: config.heroImage || '' },
+    articles: { type: 'articles', title: 'Últimas Publicaciones' }
+  };
+  
   document.getElementById('cfgSiteName').value = config.siteName || '';
   document.getElementById('cfgAccentColor').value = config.accentColor || '#7C3AED';
-  document.getElementById('cfgHeroTitle').value = config.heroTitle || '';
-  document.getElementById('cfgHeroDesc').value = config.heroDescription || '';
-  
   document.getElementById('cfgTheme').value = config.theme || 'dark';
   document.getElementById('cfgFontFamily').value = config.fontFamily || 'Inter';
   document.getElementById('cfgBorderRadius').value = config.borderRadius || '12px';
 
-  if (config.heroImage) {
-    document.getElementById('cfgHeroImageBase64').value = config.heroImage;
-    document.getElementById('cfgHeroImagePreview').style.backgroundImage = `url(${config.heroImage})`;
-    const textEl = document.querySelector('#cfgHeroImagePreview .image-upload-text');
-    if (textEl) textEl.style.display = 'none';
-  }
-  
   const socials = config.socials || {};
   document.getElementById('cfgSocYoutube').value = socials.youtube || '';
   document.getElementById('cfgSocInsta').value = socials.instagram || '';
@@ -342,26 +338,141 @@ async function initSettingsPanel() {
   const iframe = document.getElementById('livePreviewFrame');
   if (iframe) iframe.src = `/${DB.siteId}`;
 
-  // Image Upload para Hero
-  document.getElementById('cfgHeroImageUpload').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    try {
-      const base64 = await DB.resizeImage(file);
-      document.getElementById('cfgHeroImageBase64').value = base64;
-      document.getElementById('cfgHeroImagePreview').style.backgroundImage = `url(${base64})`;
-      document.querySelector('#cfgHeroImagePreview .image-upload-text').style.display = 'none';
-      sendLiveUpdate();
-    } catch (err) {
-      showToast(err.message, 'error');
-    }
+  // Blocks Renderer
+  function renderAdminBlocks() {
+    const container = document.getElementById('blocksList');
+    container.innerHTML = '';
+    
+    currentLayout.forEach(blockId => {
+      const block = currentBlocks[blockId];
+      if(!block) return;
+      
+      const div = document.createElement('div');
+      div.className = 'admin-block-item';
+      div.dataset.id = blockId;
+      div.style.cssText = 'background: var(--bg-primary); border: 1px solid var(--bg-tertiary); border-radius: var(--radius-md); padding: var(--space-sm); cursor: grab;';
+      
+      const header = document.createElement('div');
+      header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; font-weight: bold;';
+      
+      const titleSpan = document.createElement('span');
+      titleSpan.innerHTML = `☰ ${block.type.toUpperCase()}`;
+      
+      const actions = document.createElement('div');
+      const btnEdit = document.createElement('button');
+      btnEdit.type = 'button';
+      btnEdit.className = 'btn btn-outline btn-small';
+      btnEdit.textContent = '⚙️';
+      
+      const btnDel = document.createElement('button');
+      btnDel.type = 'button';
+      btnDel.className = 'btn btn-danger btn-small';
+      btnDel.textContent = '❌';
+      btnDel.style.marginLeft = '4px';
+      btnDel.onclick = () => {
+         currentLayout = currentLayout.filter(id => id !== blockId);
+         delete currentBlocks[blockId];
+         renderAdminBlocks();
+         sendLiveUpdate();
+      };
+      
+      actions.appendChild(btnEdit);
+      actions.appendChild(btnDel);
+      header.appendChild(titleSpan);
+      header.appendChild(actions);
+      div.appendChild(header);
+      
+      const body = document.createElement('div');
+      body.className = 'hidden';
+      body.style.cssText = 'margin-top: var(--space-md); padding-top: var(--space-sm); border-top: 1px solid var(--bg-tertiary); display: grid; gap: var(--space-sm); cursor: default;';
+      
+      btnEdit.onclick = () => { body.classList.toggle('hidden'); };
+
+      if (block.type === 'hero' || block.type === 'about') {
+         body.innerHTML = `
+           <div class="input-group">
+             <label>Título</label>
+             <input type="text" class="b-title" value="${block.title || ''}">
+           </div>
+           <div class="input-group">
+             <label>Descripción</label>
+             <textarea class="b-desc" rows="2">${block.desc || ''}</textarea>
+           </div>
+           <div class="input-group">
+             <label>URL Imagen</label>
+             <input type="text" class="b-image" value="${block.image || ''}" placeholder="Pega URL base64...">
+           </div>
+         `;
+      } else if (block.type === 'youtube') {
+         body.innerHTML = `
+           <div class="input-group">
+             <label>URL Video YouTube</label>
+             <input type="url" class="b-url" value="${block.url || ''}" placeholder="https://youtube.com/...">
+           </div>
+         `;
+      } else if (block.type === 'articles') {
+         body.innerHTML = `
+           <div class="input-group">
+             <label>Título de Sección</label>
+             <input type="text" class="b-title" value="${block.title || 'Últimas Publicaciones'}">
+           </div>
+         `;
+      }
+      
+      body.querySelectorAll('input, textarea').forEach(inp => {
+         inp.addEventListener('input', (e) => {
+           if(e.target.classList.contains('b-title')) block.title = e.target.value;
+           if(e.target.classList.contains('b-desc')) block.desc = e.target.value;
+           if(e.target.classList.contains('b-image')) block.image = e.target.value;
+           if(e.target.classList.contains('b-url')) block.url = e.target.value;
+           sendLiveUpdate();
+         });
+      });
+      
+      div.appendChild(body);
+      container.appendChild(div);
+    });
+  }
+
+  renderAdminBlocks();
+
+  // Initialize SortableJS
+  if (typeof Sortable !== 'undefined') {
+    Sortable.create(document.getElementById('blocksList'), {
+      animation: 150,
+      onEnd: function (evt) {
+        // Reorder currentLayout array based on DOM order
+        const items = document.querySelectorAll('.admin-block-item');
+        currentLayout = Array.from(items).map(item => item.dataset.id);
+        sendLiveUpdate();
+      }
+    });
+  }
+
+  // Block Selector Logic
+  const blockSelector = document.getElementById('blockSelector');
+  document.getElementById('btnAddBlock').addEventListener('click', () => {
+    blockSelector.classList.toggle('hidden');
   });
 
-  document.getElementById('btnRemoveHeroImage').addEventListener('click', () => {
-    document.getElementById('cfgHeroImageBase64').value = '';
-    document.getElementById('cfgHeroImagePreview').style.backgroundImage = 'none';
-    document.querySelector('#cfgHeroImagePreview .image-upload-text').style.display = 'block';
-    sendLiveUpdate();
+  document.querySelectorAll('.block-add-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+       const type = e.target.dataset.type;
+       const newId = type + '_' + Date.now();
+       
+       currentLayout.push(newId);
+       currentBlocks[newId] = { type: type };
+       if(type === 'hero' || type === 'about') {
+         currentBlocks[newId].title = 'Nuevo Bloque';
+       }
+       if(type === 'articles') {
+         currentBlocks[newId].title = 'Últimas Publicaciones';
+       }
+       
+       renderAdminBlocks();
+       sendLiveUpdate();
+       blockSelector.classList.add('hidden');
+    });
   });
 
   function sendLiveUpdate() {
@@ -369,24 +480,21 @@ async function initSettingsPanel() {
       ...config,
       siteName: document.getElementById('cfgSiteName').value,
       accentColor: document.getElementById('cfgAccentColor').value,
-      heroTitle: document.getElementById('cfgHeroTitle').value,
-      heroDescription: document.getElementById('cfgHeroDesc').value,
       theme: document.getElementById('cfgTheme').value,
       fontFamily: document.getElementById('cfgFontFamily').value,
       borderRadius: document.getElementById('cfgBorderRadius').value,
-      heroImage: document.getElementById('cfgHeroImageBase64').value
+      layout: currentLayout,
+      blocks: currentBlocks
     };
     if (iframe && iframe.contentWindow) {
       iframe.contentWindow.postMessage({ type: 'LIVE_PREVIEW_UPDATE', config: liveConfig }, '*');
     }
   }
 
-  const inputs = document.querySelectorAll('#configForm input, #configForm select, #configForm textarea');
-  inputs.forEach(input => {
-    if (input.id !== 'cfgPassword' && input.type !== 'file') {
-      input.addEventListener('input', sendLiveUpdate);
-      input.addEventListener('change', sendLiveUpdate);
-    }
+  const staticInputs = document.querySelectorAll('#cfgSiteName, #cfgAccentColor, #cfgTheme, #cfgFontFamily, #cfgBorderRadius');
+  staticInputs.forEach(input => {
+    input.addEventListener('input', sendLiveUpdate);
+    input.addEventListener('change', sendLiveUpdate);
   });
 
   // Guardar configuración
@@ -401,12 +509,11 @@ async function initSettingsPanel() {
       ...config,
       siteName: document.getElementById('cfgSiteName').value,
       accentColor: document.getElementById('cfgAccentColor').value,
-      heroTitle: document.getElementById('cfgHeroTitle').value,
-      heroDescription: document.getElementById('cfgHeroDesc').value,
       theme: document.getElementById('cfgTheme').value,
       fontFamily: document.getElementById('cfgFontFamily').value,
       borderRadius: document.getElementById('cfgBorderRadius').value,
-      heroImage: document.getElementById('cfgHeroImageBase64').value,
+      layout: currentLayout,
+      blocks: currentBlocks,
       socials: {
         youtube: document.getElementById('cfgSocYoutube').value,
         instagram: document.getElementById('cfgSocInsta').value,

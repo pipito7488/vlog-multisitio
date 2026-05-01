@@ -21,17 +21,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('footerSiteName').textContent = config.siteName || 'Mi Vlog';
   document.getElementById('currentYear').textContent = new Date().getFullYear();
-  document.getElementById('heroTitle').textContent = config.heroTitle || 'Bienvenido';
-  document.getElementById('heroDesc').textContent = config.heroDescription || '';
 
   // Renderizar redes sociales
   renderSocialLinks(config.socials);
 
-  // Renderizar artículos
-  await renderArticles();
+  // Renderizar Layout Dinámico (Bloques)
+  await renderLayout(config);
 
   // Escuchar cambios en vivo desde el editor visual
-  window.addEventListener('message', (event) => {
+  window.addEventListener('message', async (event) => {
     if (event.data && event.data.type === 'LIVE_PREVIEW_UPDATE') {
       const liveConfig = event.data.config;
       DB.applyDesign(liveConfig);
@@ -40,10 +38,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('siteLogo').textContent = liveConfig.siteName || 'Mi Vlog';
         document.getElementById('footerSiteName').textContent = liveConfig.siteName || 'Mi Vlog';
       }
-      if (document.getElementById('heroTitle')) {
-        document.getElementById('heroTitle').textContent = liveConfig.heroTitle || 'Bienvenido';
-        document.getElementById('heroDesc').textContent = liveConfig.heroDescription || '';
-      }
+      
+      await renderLayout(liveConfig);
     }
   });
 });
@@ -75,19 +71,87 @@ function renderSocialLinks(socials) {
   if (bottomNav) bottomNav.innerHTML = html;
 }
 
-async function renderArticles() {
-  const grid = document.getElementById('articlesGrid');
+async function renderLayout(config) {
+  const main = document.getElementById('dynamicLayout');
+  if (!main) return;
+  
+  const layout = config.layout || ['hero', 'articles'];
+  const blocks = config.blocks || {};
+  
+  let layoutHtml = '';
+  
+  for (const blockId of layout) {
+    const blockData = blocks[blockId];
+    if (!blockData) continue;
+    
+    if (blockData.type === 'hero') {
+      const hasImage = blockData.image && blockData.image !== '';
+      const bgStyle = hasImage ? `background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${blockData.image}); background-size: cover; background-position: center;` : '';
+      layoutHtml += `
+        <section class="hero" id="block-${blockId}" style="${bgStyle}">
+          <div class="container">
+            <h1 class="hero-title">${blockData.title || ''}</h1>
+            <p class="hero-description">${blockData.desc || ''}</p>
+          </div>
+        </section>
+      `;
+    } 
+    else if (blockData.type === 'about') {
+      layoutHtml += `
+        <section class="about-section" id="block-${blockId}" style="padding: var(--space-3xl) 0;">
+          <div class="container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-2xl); align-items: center;">
+            ${blockData.image ? `<img src="${blockData.image}" style="border-radius: var(--radius-lg); width: 100%; max-height: 400px; object-fit: cover;">` : '<div style="background: var(--bg-tertiary); height: 300px; border-radius: var(--radius-lg);"></div>'}
+            <div>
+              <h2 style="font-size: 2.5rem; margin-bottom: var(--space-lg);">${blockData.title || 'Sobre Mí'}</h2>
+              <p style="color: var(--text-secondary); font-size: 1.1rem; line-height: 1.8;">${blockData.desc || ''}</p>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+    else if (blockData.type === 'youtube') {
+      if (blockData.url) {
+        const embedUrl = DB.getYouTubeEmbed(blockData.url);
+        if (embedUrl) {
+          layoutHtml += `
+            <section class="youtube-section" id="block-${blockId}" style="padding: var(--space-2xl) 0;">
+              <div class="container" style="max-width: 900px;">
+                <div class="video-container">
+                  <iframe src="${embedUrl}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+              </div>
+            </section>
+          `;
+        }
+      }
+    }
+    else if (blockData.type === 'articles') {
+      const articlesHtml = await getArticlesHtml();
+      layoutHtml += `
+        <section class="articles-section" id="block-${blockId}">
+          <div class="container">
+            <h2 class="section-title">${blockData.title || 'Últimas Publicaciones'}</h2>
+            <div class="grid">
+              ${articlesHtml}
+            </div>
+          </div>
+        </section>
+      `;
+    }
+  }
+  
+  main.innerHTML = layoutHtml;
+}
+
+async function getArticlesHtml() {
   const articles = await DB.getPublishedArticles();
 
   if (articles.length === 0) {
-    grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: var(--space-2xl) 0;">No hay artículos publicados todavía.</p>';
-    return;
+    return '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: var(--space-2xl) 0;">No hay artículos publicados todavía.</p>';
   }
 
   let html = '';
-
   articles.forEach(article => {
-    // Determinar miniatura
     let thumbUrl = '';
     if (article.mediaType === 'image' && article.mediaData) {
       thumbUrl = article.mediaData;
@@ -128,5 +192,5 @@ async function renderArticles() {
     `;
   });
 
-  grid.innerHTML = html;
+  return html;
 }
