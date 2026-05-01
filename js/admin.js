@@ -14,6 +14,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('loginScreen').classList.remove('hidden');
   }
 
+  // Actualizar enlace "Ver sitio" en el sidebar
+  const viewSiteBtn = document.getElementById('viewSiteBtn');
+  if (viewSiteBtn) {
+    viewSiteBtn.href = `/${DB.siteId}`;
+  }
+
   // Eventos de Login
   document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
