@@ -138,6 +138,49 @@ async function renderLayout(config) {
         </section>
       `;
     }
+    else if (blockData.type === 'html') {
+      layoutHtml += `
+        <section class="html-section" id="block-${blockId}" style="padding: var(--space-2xl) 0; overflow: hidden;">
+          <div class="container" style="text-align: center; width: 100%;">
+            ${blockData.html || '<p style="color:var(--text-muted);">Bloque HTML vacío.</p>'}
+          </div>
+        </section>
+      `;
+    }
+    else if (blockData.type === 'contact') {
+      layoutHtml += `
+        <section class="contact-section" id="block-${blockId}" style="padding: var(--space-3xl) 0; background: var(--bg-secondary); border-top: 1px solid var(--bg-tertiary); border-bottom: 1px solid var(--bg-tertiary); margin: var(--space-2xl) 0;">
+          <div class="container" style="max-width: 600px; text-align: center;">
+            <h2 class="section-title" style="justify-content: center; font-size: 2.5rem;">${blockData.title || 'Contáctame'}</h2>
+            <form class="contact-form" style="margin-top: var(--space-xl);" onsubmit="event.preventDefault(); window.location.href='mailto:${blockData.email || ''}?subject=Contacto desde mi sitio web'">
+              <div class="input-group">
+                <input type="text" placeholder="Tu Nombre" required style="width: 100%; padding: 1rem; margin-bottom: var(--space-sm); border-radius: var(--radius-md); border: 1px solid var(--bg-tertiary); background: var(--bg-primary); color: var(--text-primary);">
+              </div>
+              <div class="input-group">
+                <textarea placeholder="Tu Mensaje" required rows="4" style="width: 100%; padding: 1rem; margin-bottom: var(--space-md); border-radius: var(--radius-md); border: 1px solid var(--bg-tertiary); background: var(--bg-primary); color: var(--text-primary); resize: vertical;"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.1rem; padding: 1rem; border-radius: var(--radius-md);">${blockData.btnText || 'Enviar Mensaje'}</button>
+            </form>
+          </div>
+        </section>
+      `;
+    }
+    else if (blockData.type === 'gallery') {
+      let imagesHtml = '';
+      if(blockData.img1) imagesHtml += `<div style="border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); aspect-ratio: 1; background-image: url(${blockData.img1}); background-size: cover; background-position: center; transition: transform var(--transition-normal);" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"></div>`;
+      if(blockData.img2) imagesHtml += `<div style="border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); aspect-ratio: 1; background-image: url(${blockData.img2}); background-size: cover; background-position: center; transition: transform var(--transition-normal);" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"></div>`;
+      if(blockData.img3) imagesHtml += `<div style="border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); aspect-ratio: 1; background-image: url(${blockData.img3}); background-size: cover; background-position: center; transition: transform var(--transition-normal);" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"></div>`;
+      
+      layoutHtml += `
+        <section class="gallery-section" id="block-${blockId}" style="padding: var(--space-3xl) 0;">
+          <div class="container">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-xl);">
+              ${imagesHtml || '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: var(--space-xl); background: var(--bg-secondary); border-radius: var(--radius-lg); border: 1px dashed var(--bg-tertiary);">Sube imágenes desde el panel de control para ver la galería.</div>'}
+            </div>
+          </div>
+        </section>
+      `;
+    }
   }
   
   main.innerHTML = layoutHtml;

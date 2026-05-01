@@ -417,6 +417,44 @@ async function initSettingsPanel() {
              <input type="text" class="b-title" value="${block.title || 'Últimas Publicaciones'}">
            </div>
          `;
+      } else if (block.type === 'html') {
+         body.innerHTML = `
+           <div class="input-group">
+             <label>Código HTML / Embed</label>
+             <textarea class="b-html" rows="5" placeholder="<iframe>...</iframe>">${block.html || ''}</textarea>
+             <small style="color:var(--text-muted)">Puedes pegar mapas de Google, listas de Spotify, etc.</small>
+           </div>
+         `;
+      } else if (block.type === 'contact') {
+         body.innerHTML = `
+           <div class="input-group">
+             <label>Título</label>
+             <input type="text" class="b-title" value="${block.title || 'Contáctame'}">
+           </div>
+           <div class="input-group">
+             <label>Correo Destino</label>
+             <input type="email" class="b-email" value="${block.email || ''}" placeholder="tu@email.com">
+           </div>
+           <div class="input-group">
+             <label>Texto del Botón</label>
+             <input type="text" class="b-btn" value="${block.btnText || 'Enviar Mensaje'}">
+           </div>
+         `;
+      } else if (block.type === 'gallery') {
+         body.innerHTML = `
+           <div class="input-group">
+             <label>Imagen 1 (Base64 / URL)</label>
+             <input type="text" class="b-img1" value="${block.img1 || ''}">
+           </div>
+           <div class="input-group">
+             <label>Imagen 2 (Base64 / URL)</label>
+             <input type="text" class="b-img2" value="${block.img2 || ''}">
+           </div>
+           <div class="input-group">
+             <label>Imagen 3 (Base64 / URL)</label>
+             <input type="text" class="b-img3" value="${block.img3 || ''}">
+           </div>
+         `;
       }
       
       body.querySelectorAll('input, textarea').forEach(inp => {
@@ -425,6 +463,12 @@ async function initSettingsPanel() {
            if(e.target.classList.contains('b-desc')) block.desc = e.target.value;
            if(e.target.classList.contains('b-image')) block.image = e.target.value;
            if(e.target.classList.contains('b-url')) block.url = e.target.value;
+           if(e.target.classList.contains('b-html')) block.html = e.target.value;
+           if(e.target.classList.contains('b-email')) block.email = e.target.value;
+           if(e.target.classList.contains('b-btn')) block.btnText = e.target.value;
+           if(e.target.classList.contains('b-img1')) block.img1 = e.target.value;
+           if(e.target.classList.contains('b-img2')) block.img2 = e.target.value;
+           if(e.target.classList.contains('b-img3')) block.img3 = e.target.value;
            sendLiveUpdate();
          });
       });
@@ -467,6 +511,9 @@ async function initSettingsPanel() {
        }
        if(type === 'articles') {
          currentBlocks[newId].title = 'Últimas Publicaciones';
+       }
+       if(type === 'contact') {
+         currentBlocks[newId].title = 'Contáctame';
        }
        
        renderAdminBlocks();
